@@ -112,8 +112,8 @@ public class Tauler {
             
             acabat=fi();
             this.jugador=2;
-            
-        }else{
+        }
+        else{
             long startTime = System.nanoTime();
             int[] tir=jugador2.tirada(peça[0],peça[1],peça[2],peça[3]);
             long Time = System.nanoTime() - startTime;
@@ -299,5 +299,16 @@ public class Tauler {
             return Color == 0 || Color == 4 || Forma==0 || Forma==4 || Forat==0 || Forat==4 || Tamany==0 || Tamany==4;
         }
     }
-    
+
+    @Override
+    public String toString() {
+        StringBuilder tauler = new StringBuilder();
+        for(int i = 0; i != this.dimx; i++){
+            for (int j = 0; j != this.dimy; j++) {
+                tauler.append(String.format("%04d", this.taulell[i][j]) + "  ");
+            }
+            tauler.append("\n");
+        }
+        return tauler.toString();
+    }
 }

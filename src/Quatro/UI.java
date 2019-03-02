@@ -40,7 +40,7 @@ public class UI extends javax.swing.JFrame {
         initable();
         pinta();
         //Posem icona eXiT a la finestra
-        String dir = System.getProperty("user.dir") + "\\Imatges\\icon.png";
+        String dir = System.getProperty("user.dir") + "/Imatges/icon.png";
         this.setIconImage(new ImageIcon(dir).getImage());
     }
 
@@ -59,7 +59,7 @@ public class UI extends javax.swing.JFrame {
         setTitle("eXiT Simulator");
         setBackground(new java.awt.Color(255, 255, 255));
 
-        jButton1.setToolTipText("Es començara la simulació");
+        jButton1.setToolTipText("Es començarà la simulació");
         jButton1.setLabel("Step");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -227,7 +227,7 @@ public class UI extends javax.swing.JFrame {
                 int Valor=escena.getpos(i, j);
                 
                 if (Valor == -1){
-                    String dir = System.getProperty("user.dir") + "\\Imatges\\im0.jpg";
+                    String dir = System.getProperty("user.dir") + "/Imatges/im0.jpg";
                     ImageIcon icon= new ImageIcon(dir);
                     jTable2.setValueAt(icon, (int) escena.getY() - j -1, (int) i);//la visualitzacio s'ha de girar
                 }else{
@@ -238,7 +238,7 @@ public class UI extends javax.swing.JFrame {
                     int Forat=(int) (Valor%1000/10);
                     Valor = Valor - Forat * 10;
                     int Tamany=(int) (Valor%1000/1);
-                    String dir = System.getProperty("user.dir") + "\\Imatges\\im" + Integer.toString(Color) + Integer.toString(Forma) + Integer.toString(Forat) + Integer.toString(Tamany) + ".jpg";
+                    String dir = System.getProperty("user.dir") + "/Imatges/im" + Integer.toString(Color) + Integer.toString(Forma) + Integer.toString(Forat) + Integer.toString(Tamany) + ".jpg";
                     ImageIcon icon= new ImageIcon(dir);
                     jTable2.setValueAt(icon, (int) escena.getY() - j -1, (int) i);//la visualitzacio s'ha de girar
                 }
