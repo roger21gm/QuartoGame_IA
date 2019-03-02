@@ -1,0 +1,8 @@
+el nom esta format per:
+im - identificador imatge
+0 o 1 - Color -> 	0 = blanc 	1 = negre
+0 o 1 - Forma -> 	0 = Rodona 	1 = Quadrat
+0 o 1 - Forat -> 	0 = No  	1 = Si
+0 o 1 - Tamany -> 	0 = Petit 	1 = Gran
+
+format jpg i tamany 75x75 pixels 
