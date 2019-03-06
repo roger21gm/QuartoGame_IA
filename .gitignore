@@ -19,3 +19,5 @@ out/production/QuartoGame_IA/Quatro/ImageRenderer.class
 .idea/uiDesigner.xml
 out/production/QuartoGame_IA/Quatro/ConjuntPeces.class
 out/production/QuartoGame_IA/META-INF/QuartoGame_IA.kotlin_module
+*.class
+*.xml

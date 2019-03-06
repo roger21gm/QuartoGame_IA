@@ -5,56 +5,38 @@ package Quatro;
  * @author Usuari
  */
 public class Player1 {
-    private Tauler meutaulell;
+    private AlphaBetaAgent ABagent;
+    private Tauler taulerJoc;
+
     Player1(Tauler entrada){
-        meutaulell = entrada;
+        ABagent = new AlphaBetaAgent();
+        taulerJoc = entrada;
     }
+
+
     public int[] tirada(int colorin, int formain, int foratin, int tamanyin){
      //colorin - Color de la peça a colocar -> 	0 = Blanc 	1 = Negre
      //formain - Forma de la peça a colocar -> 	0 = Rodona 	1 = Quadrat
      //foratin - Forat de la peça a colocar -> 	0 = No  	1 = Si
      //tamanyin - Forat de la peça a colocar -> 0 = Petit 	1 = Gran
-     
-        int x,y,color,forma,forat,tamany;
-        color=-1;
-        forma=-1;
-        forat=-1;
-        tamany=-1;
-        boolean trobat=true;
-        
-        while( trobat){
-            //mentres la trobem al taulell genero peçes
-            //La peça que posarem
-            color= (int) java.lang.Math.round( java.lang.Math.random() );
-            forma=(int) java.lang.Math.round( java.lang.Math.random() );
-            forat= (int) java.lang.Math.round( java.lang.Math.random() );
-            tamany= (int) java.lang.Math.round( java.lang.Math.random() );
 
-            trobat = color==colorin && forma==formain && forat==foratin && tamany==tamanyin;
-            
-            int valor= color*1000+forma*100+forat*10+tamany;
-            //busco la peça
-            for(int i=0;i<meutaulell.getX();i++){
-                for(int j=0;j<meutaulell.getY();j++){
-                    if (meutaulell.getpos(i,j) == valor){
-                        trobat=true; 
-                    }
-                }
-            }
+        Piece toPlacePiece = new Piece(colorin,formain,foratin,tamanyin);
+        Resultat res = ABagent.alphaBetaThink(toPlacePiece, 1, taulerJoc);
+        Piece toPassPiece = res.nextPiece;
+        String toPassPieceString = toPassPiece.getPieceAsString();
+
+
+        int[] uep = {toPassPieceString.charAt(0) - '0', toPassPieceString.charAt(1) - '0',toPassPieceString.charAt(2)- '0',toPassPieceString.charAt(3)- '0'};
+
+        System.out.println("(" + res.x + "," + res.y + ")");
+
+        for (int i = 0; i < 4; i++) {
+            System.out.print(uep[i]);
         }
-        
- 
-        //busco una posicio buida on posar la peça
-        for(int i=0;i<meutaulell.getX();i++){
-            for(int j=0;j<meutaulell.getY();j++){
-                if (meutaulell.getpos(i,j) == -1){
-                    return new int[]{i,j,color, forma, forat, tamany}; 
-                }
-            }
-        }
-        
+        System.out.println();
+
         //Un retorn per defecte
-        return new int[]{0,0,0,0,0,0};
+        return new int[]{res.x,res.y,toPassPieceString.charAt(0) - '0',toPassPieceString.charAt(1)- '0',toPassPieceString.charAt(2)- '0',toPassPieceString.charAt(3)- '0'};
         //format del retorn vector de 6 int {posX[0a3], posY[0a3], color[0o1] forma[0o1], forat[0o1], tamany[0o1]}
         //posX i posY es la posicio on es coloca la peça d'entrada
         //color forma forat i tamany descriuen la peça que colocara el contrari

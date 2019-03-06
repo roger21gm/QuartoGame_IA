@@ -59,7 +59,7 @@ public class UI extends javax.swing.JFrame {
         setTitle("eXiT Simulator");
         setBackground(new java.awt.Color(255, 255, 255));
 
-        jButton1.setToolTipText("Es començarà la simulació");
+        jButton1.setToolTipText("Es començara la simulació");
         jButton1.setLabel("Step");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

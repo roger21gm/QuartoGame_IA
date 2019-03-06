@@ -17,14 +17,14 @@ public class Player2 {
      //formain - Forma de la peça a colocar -> 	0 = Rodona 	1 = Quadrat
      //foratin - Forat de la peça a colocar -> 	0 = No  	1 = Si
      //tamanyin - Forat de la peça a colocar -> 0 = Petit 	1 = Gran
-     
+
         int x,y,color,forma,forat,tamany;
         color=-1;
         forma=-1;
         forat=-1;
         tamany=-1;
         boolean trobat=true;
-        
+
         while( trobat){
             //mentres la trobem al taulell genero peçes
             //La peça que posarem
@@ -40,22 +40,22 @@ public class Player2 {
             for(int i=0;i<meutaulell.getX();i++){
                 for(int j=0;j<meutaulell.getY();j++){
                     if (meutaulell.getpos(i,j) == valor){
-                        trobat=true; 
+                        trobat=true;
                     }
                 }
             }
         }
-        
-        
+
+
         //busco una posicio buida on posar la peça
         for(int i=0;i<meutaulell.getX();i++){
             for(int j=0;j<meutaulell.getY();j++){
                 if (meutaulell.getpos(i,j) == -1){
-                    return new int[]{i,j,color, forma, forat, tamany}; 
+                    return new int[]{i,j,color, forma, forat, tamany};
                 }
             }
         }
-        
+
         //Un retorn per defecte
         return new int[]{0,0,0,0,0,0};
         //format del retorn vector de 6 int {posX[0a3], posY[0a3], color[0o1] forma[0o1], forat[0o1], tamany[0o1]}
