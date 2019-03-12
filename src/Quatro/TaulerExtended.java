@@ -3,6 +3,7 @@ package Quatro;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class TaulerExtended {
 
@@ -111,5 +112,17 @@ public class TaulerExtended {
             System.out.println();
         }
 
+    }
+
+    public Piece getRandomAvailabePiece() {
+
+        Random rand = new Random();
+        int index = rand.nextInt(16);
+
+        while(!piecesPool[index]){
+            index = rand.nextInt(16);
+        }
+
+        return new Piece(index);
     }
 }

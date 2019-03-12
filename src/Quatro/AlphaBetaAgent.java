@@ -1,81 +1,108 @@
 package Quatro;
 
+import java.util.Random;
+
 public class AlphaBetaAgent {
 
-    int x;
-    int y;
-    Piece nextPiece;
-    Resultat res;
-    TaulerExtended tauler;
+    public int comptador;
 
-    AlphaBetaAgent(){
-        x = -1;
-        y = -1;
-        nextPiece = null;
-        res = new Resultat();
-        tauler = new TaulerExtended();
+    AlphaBetaAgent() {
+        comptador = 0;
     }
 
 
     public Resultat alphaBetaThink(Piece a, int depth, Tauler tau){
+        TaulerExtended tauler = new TaulerExtended(tau);
+        Resultat res = new Resultat();
 
-        tauler = new TaulerExtended(tau);
+        maxValue(a, tauler, depth, res ,-1000000, 1000000);
 
-        minValue(a, depth, -1000000, 1000000);
+        if(res.nextPiece == null)
+            res.nextPiece = new Piece();
+
         return res;
     }
 
+    public Resultat randomStep(Piece a, Tauler tau){
+        TaulerExtended tauler = new TaulerExtended(tau);
 
-    private int minValue(Piece a, int depth, int alpha, int beta){
-        int local_beta = 1000000;
+        Random rand = new Random();
+
+        int x = rand.nextInt(4);
+        int y = rand.nextInt(4);
+        while(tauler.getPiece(x,y).isValid()){
+            x = rand.nextInt(4);
+            y = rand.nextInt(4);
+        }
+
+
+        boolean[] pecesDisponibles = tauler.getPecesDisponibles();
+        int index = rand.nextInt(16);
+
+        while(!pecesDisponibles[index]){
+            index = rand.nextInt(16);
+        }
+
+        Resultat res = new Resultat();
+        res.nextPiece = new Piece(index);
+        res.x = x;
+        res.y = y;
+
+        return res;
+    }
+
+    private int minValue(Piece a, TaulerExtended tau, int depth, Resultat result, int alpha, int beta){
+        int local_beta = Integer.MAX_VALUE;
 
         for(int i = 0; i < 4; i++){
             for(int j = 0; j<4; j++){
-                if(!tauler.getPiece(j,i).isValid()){
-                    tauler.setPiece(j,i,a);
-                    boolean haGuanyat = quartoWin(tauler);
-                    if(tauler.getNPecesColocades() == 16){
+                if(!tau.getPiece(j,i).isValid()){
+                    TaulerExtended tauAux = tau.copy();
+                    tauAux.setPiece(j,i,a);
+                    boolean haGuanyat = quartoWin(tauAux);
+                    if(tauAux.getNPecesColocades() == 16){
                         //This placement filled up the board which means that
                         //we can't go further down so we just update the x, j
                         //and return the value of this end state
-                        res.x = j;
-                        res.y = i;
+                        result.x = j;
+                        result.y = i;
                         return (haGuanyat ? 1 : 0)  * -100;
                     }
                     else if(haGuanyat){
                         //This is the maximum we can get, which means that we won the game
                         //no reason to go further down since this lead to a victory
-                        res.x = j;
-                        res.y = i;
+                        result.x = j;
+                        result.y = i;
                         return -100;
                     }
                     else if(depth == 0){
                         //We have reached the bottom of the recursion
                         //and we need only evaluate the possible placements
                         //of the piece that we have gotten
-                        int valor = -quartoHeuristic(tauler);
+                        int valor = -quartoHeuristic(tauAux);
                         if(valor < local_beta){
                             local_beta = valor;
-                            res.x = j;
-                            res.y = i;
+                            result.x = j;
+                            result.y = i;
                         }
                         if(local_beta <= alpha)
                             return local_beta;
                     }
                     else{
-                        boolean[] piecesAvailable = tauler.getPecesDisponibles();
+                        boolean[] piecesAvailable = tauAux.getPecesDisponibles();
 
                         for(int k = 0; k<16; k++){
                             if(piecesAvailable[k]){
-                                int val = maxValue(new Piece(k), depth-1, alpha, local_beta);
+                                Resultat resAux = new Resultat();
+                                int val = maxValue(new Piece(k), tauAux, depth-1, resAux, alpha, local_beta);
                                 if(val < local_beta){
                                     //The value we got from below is smaller
                                     //than the best beta we have found which
                                     //means we want that, so we need to update
                                     //x, y and update beta
-                                    res.x = j;
-                                    res.y = i;
-                                    res.nextPiece = new Piece(k);
+                                    result.x = j;
+                                    result.y = i;
+                                    result.nextPiece = new Piece(k);
                                     local_beta = val;
                                 }
                                 if(local_beta <= alpha) return local_beta;
@@ -89,56 +116,58 @@ public class AlphaBetaAgent {
         return local_beta;
     }
 
-    private int maxValue(Piece a, int depth, int alpha, int beta){
-        int local_alpha = -1000000;
+    private int maxValue(Piece a, TaulerExtended tau, int depth, Resultat result, int alpha, int beta){
+        Integer local_alpha = Integer.MIN_VALUE;
 
         for(int i = 0; i < 4; i++){
             for(int j = 0; j<4; j++){
-                if(!tauler.getPiece(j,i).isValid()){
-                    tauler.setPiece(j,i,a);
-                    boolean haGuanyat = quartoWin(tauler);
-                    if(tauler.getNPecesColocades() == 16){
+                if(!tau.getPiece(j,i).isValid()){
+                    TaulerExtended tauAux = tau.copy();
+                    tauAux.setPiece(j,i,a);
+                    boolean haGuanyat = quartoWin(tauAux);
+                    if(tauAux.getNPecesColocades() == 16){
                         //This placement filled up the board which means that
                         //we can't go further down so we just update the x, j
                         //and return the value of this end state
-                        res.x = j;
-                        res.y = i;
+                        result.x = j;
+                        result.y = i;
                         return (haGuanyat ? 1 : 0)  * 100;
                     }
                     else if(haGuanyat){
                         //This is the maximum we can get, which means that we won the game
                         //no reason to go further down since this lead to a victory
-                        res.x = j;
-                        res.y = i;
+                        result.x = j;
+                        result.y = i;
                         return 100;
                     }
                     else if(depth == 0){
                         //We have reached the bottom of the recursion
                         //and we need only evaluate the possible placements
                         //of the piece that we have gotten
-                        int valor = quartoHeuristic(tauler);
+                        int valor = quartoHeuristic(tauAux);
                         if(valor > local_alpha){
                             local_alpha = valor;
-                            res.x = j;
-                            res.y = i;
+                            result.x = j;
+                            result.y = i;
                         }
                         if(local_alpha >= beta)
                             return local_alpha;
                     }
                     else{
-                        boolean[] piecesAvailable = tauler.getPecesDisponibles();
+                        boolean[] piecesAvailable = tauAux.getPecesDisponibles();
 
                         for(int k = 0; k<16; k++){
                             if(piecesAvailable[k]){
-                                int val = minValue(new Piece(k), depth-1, local_alpha, beta);
+                                Resultat resAux = new Resultat();
+                                int val = minValue(new Piece(k), tauAux, depth-1, resAux, local_alpha, beta);
                                 if(val > local_alpha){
                                     //The value we got from below is better
                                     //than what we have currently found
                                     //which means we need to keep this
                                     //position and update our alpha
-                                    res.x = j;
-                                    res.y = i;
-                                    res.nextPiece = new Piece(k);
+                                    result.x = j;
+                                    result.y = i;
+                                    result.nextPiece = new Piece(k);
                                     local_alpha = val;
                                 }
                                 if(local_alpha >= beta) return local_alpha;
@@ -155,6 +184,8 @@ public class AlphaBetaAgent {
 
     //This method should return a value between [-100, 100] where -100 is shait, 0 is a draw and 100 is great
     private int quartoHeuristic(TaulerExtended tau) {
+
+        comptador++;
         if(quartoWin(tau)){
             return 100;
         }
@@ -170,6 +201,7 @@ public class AlphaBetaAgent {
         val -= tripleNeg(tau) * 10; //We want to avoid negative situations like the plague
         //There are places where we can win, but it's far from guaranteed
         val += triplePos(tau) * 5;
+
         return val;
     }
 

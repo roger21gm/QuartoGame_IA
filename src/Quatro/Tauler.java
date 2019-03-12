@@ -1,7 +1,11 @@
 package Quatro;
 
 import java.awt.Frame;
-import javax.swing.JOptionPane;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.swing.*;
 /*
  * Es la classe que mantindra en memoria tot el nostre entorn de simulació.
  * Aqui és on trobarem el taulell actual. També hi tenim definida la creació de 
@@ -82,6 +86,7 @@ public class Tauler {
     }
 
     public boolean Step() {
+
         boolean acabat=false;
         if (this.jugador==1){
             
@@ -143,11 +148,11 @@ public class Tauler {
             this.jugador=1;
         }
         //retornem true si falten passos de simulació
-       /*//Per veure els tems d'execucio de cada jugador descomentar
+       //Per veure els tems d'execucio de cada jugador descomentar
         if (acabat){
             Frame frame = new Frame();
             JOptionPane.showMessageDialog(frame, "Jugador 1 = "+ Long.toString(this.p1time/1000000000) +" Segons, Jugador 2 = " + Long.toString(this.p2time/1000000000) +"Segons" ); 
-        }*/
+        }
         return acabat;
     }
 
@@ -299,5 +304,31 @@ public class Tauler {
             return Color == 0 || Color == 4 || Forma==0 || Forma==4 || Forat==0 || Forat==4 || Tamany==0 || Tamany==4;
         }
     }
-    
+
+    public int[] getPecaATirar(){
+        return peça;
+    }
+
+    public String getPecesDisponibles() {
+        List<Integer> peces = new ArrayList<>();
+        for(int i=0;i<16;i++){
+            peces.add(i);
+        }
+
+        //fi de joc no queden caselles lliures ??
+        for(int i=0;i<this.getX();i++){
+            for(int j=0;j<this.getY();j++){
+                if (this.getpos(i,j) != -1){
+                    peces.remove(Integer.parseInt(String.valueOf(this.getpos(i,j)),2));
+                }
+            }
+        }
+
+
+        Stream<String> objectStream = peces.stream().map(
+                x -> x + " -> " + String.format("%4s", Integer.toBinaryString(x)).replace(' ', '0')
+        );
+
+        return peces.size() + " peces disponibles!\n\n\n" + objectStream.collect(Collectors.joining("\n"));
+    }
 }

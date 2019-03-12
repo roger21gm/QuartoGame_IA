@@ -1,9 +1,9 @@
 package Quatro;
 
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.ImageIcon;
-import javax.swing.Timer;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 /*Interficie grafica, aqui es definiran les accions dels botons de la interficie
  * d'usuari
@@ -21,9 +21,18 @@ public class UI extends javax.swing.JFrame {
         public void actionPerformed(ActionEvent e) {
             boolean end;
             if (escena != null) {
+
                 end = escena.Step();
+
+
                 initable();
                 pinta();
+
+
+                int[] pecaATirar = escena.getPecaATirar();
+                String dir = System.getProperty("user.dir") + "/Imatges/im" + pecaATirar[0] + pecaATirar[1] + pecaATirar[2] + pecaATirar[3] + ".jpg";
+                ImageIcon icon= new ImageIcon(dir);
+                PieceToPlace.setValueAt(icon,(int) 0, 0);
                 
                 //si hem acabat parem el timer
                 if (end) {
@@ -54,6 +63,8 @@ public class UI extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jButton4 = new javax.swing.JButton();
+        jButton5 = new javax.swing.JButton();
+        PieceToPlace = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("eXiT Simulator");
@@ -84,6 +95,26 @@ public class UI extends javax.swing.JFrame {
         jTable2.setShowVerticalLines(false);
         jScrollPane2.setViewportView(jTable2);
 
+
+
+        PieceToPlace.setModel(new javax.swing.table.DefaultTableModel(
+                new Object [][] {
+
+                },
+                new String [] {
+
+                }
+        ));
+        PieceToPlace.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+        PieceToPlace.setEnabled(false);
+        PieceToPlace.setGridColor(new java.awt.Color(255, 255, 255));
+        PieceToPlace.setIntercellSpacing(new java.awt.Dimension(0, 0));
+        PieceToPlace.setRowHeight(50);
+        PieceToPlace.setShowHorizontalLines(false);
+        PieceToPlace.setShowVerticalLines(false);
+
+
+
         jButton2.setText("Restart");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -105,6 +136,13 @@ public class UI extends javax.swing.JFrame {
             }
         });
 
+        jButton5.setText("Mostrar fitxes disponibles");
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -117,7 +155,10 @@ public class UI extends javax.swing.JFrame {
                     .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(PieceToPlace, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                )
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -133,7 +174,14 @@ public class UI extends javax.swing.JFrame {
                         .addGap(4, 4, 4)
                         .addComponent(jButton3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton4)))
+                        .addComponent(jButton4)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(jButton5)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(PieceToPlace)
+                    )
+                )
+
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -144,11 +192,18 @@ public class UI extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         /* Callback del Boto Start. Inicia el timer i si no hi ha més simulació 
          * mostrara la taula de resultats*/
-       
+
            
             escena.Step();
+
+
             initable();
             pinta();
+
+        int[] pecaATirar = escena.getPecaATirar();
+        String dir = System.getProperty("user.dir") + "/Imatges/im" + pecaATirar[0] + pecaATirar[1] + pecaATirar[2] + pecaATirar[3] + ".jpg";
+        ImageIcon icon= new ImageIcon(dir);
+        PieceToPlace.setValueAt(icon,(int) 0, 0);
         
 
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -176,6 +231,14 @@ public class UI extends javax.swing.JFrame {
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
        /*para el timer*/
         timer.stop();
+    }//GEN-LAST:event_jButton4ActionPerformed
+
+    //fitxes
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        /*para el timer*/
+        Frame frame = new Frame();
+        JOptionPane.showMessageDialog(frame,escena.getPecesDisponibles());
+
     }//GEN-LAST:event_jButton4ActionPerformed
 
     public static void main(String args[]) {
@@ -214,8 +277,10 @@ public class UI extends javax.swing.JFrame {
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton4;
+    private javax.swing.JButton jButton5;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable2;
+    private javax.swing.JTable PieceToPlace;
     // End of variables declaration//GEN-END:variables
 
     
@@ -241,9 +306,12 @@ public class UI extends javax.swing.JFrame {
                     String dir = System.getProperty("user.dir") + "/Imatges/im" + Integer.toString(Color) + Integer.toString(Forma) + Integer.toString(Forat) + Integer.toString(Tamany) + ".jpg";
                     ImageIcon icon= new ImageIcon(dir);
                     jTable2.setValueAt(icon, (int) escena.getY() - j -1, (int) i);//la visualitzacio s'ha de girar
+                    PieceToPlace.setValueAt(icon,(int) 0, 0);
                 }
             }
         }
+
+
 
     }
 
@@ -269,5 +337,14 @@ public class UI extends javax.swing.JFrame {
 
         //posem les mides a les celles
         jTable2.setRowHeight(75);
+
+
+
+        DefaultTableModel TmodelPiece = new DefaultTableModel(1, 1);
+        PieceToPlace.setModel(TmodelPiece);
+        PieceToPlace.getColumnModel().getColumn(0).setCellRenderer(new ImageRenderer());
+        PieceToPlace.getColumnModel().getColumn(0).setPreferredWidth(75);
+        PieceToPlace.getColumnModel().getColumn(0).setWidth(75);
+        PieceToPlace.setRowHeight(75);
     }
 }
