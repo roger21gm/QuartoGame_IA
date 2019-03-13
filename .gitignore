@@ -21,3 +21,11 @@ out/production/QuartoGame_IA/Quatro/ConjuntPeces.class
 out/production/QuartoGame_IA/META-INF/QuartoGame_IA.kotlin_module
 *.class
 *.xml
+src/Marc/AlphaBeta.java
+src/Marc/Combination.java
+src/Marc/Heuristic.java
+src/Marc/Node.java
+src/Marc/Piece.java
+src/Marc/Player.java
+src/Marc/Player1.java
+src/Marc/Position.java
