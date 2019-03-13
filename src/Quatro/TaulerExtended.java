@@ -1,32 +1,16 @@
 package Quatro;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class TaulerExtended {
 
 
     private Piece[][] tauler;
     private int pecesColocades;
-    private boolean[] piecesPool;
+    private Set<Piece> piecesPool;
 
-    TaulerExtended(){
-        tauler = new Piece[4][4];
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                tauler[i][j] = new Piece();
-            }
-        }
-        pecesColocades = 0;
-        piecesPool = new boolean[16];
-        for(int i = 0; i<16; i++){
-            piecesPool[i] = true;
-        }
-    }
-
-    TaulerExtended(Piece[][] tau, int pecesC, boolean[] pool){
+    TaulerExtended(Piece[][] tau, int pecesC, Set<Piece> pool){
         tauler = new Piece[4][4];
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -34,14 +18,14 @@ public class TaulerExtended {
             }
         }
         pecesColocades = pecesC;
-        piecesPool = pool.clone();
+        piecesPool = new HashSet<>(pool);
     }
 
     TaulerExtended(Tauler tau){
         pecesColocades = 0;
-        piecesPool = new boolean[16];
+        piecesPool = new HashSet<>(16);
         for(int i = 0; i<16; i++){
-            piecesPool[i] = true;
+            piecesPool.add(new Piece(i));
         }
 
         tauler = new Piece[4][4];
@@ -49,9 +33,10 @@ public class TaulerExtended {
             for (int j = 0; j < 4; j++) {
                 if(tau.getpos(i,j) != -1) {
                     int indexPeca = Integer.parseInt(String.valueOf(tau.getpos(i,j)),2);
-                    tauler[i][j] = new Piece(indexPeca);
+                    Piece pecaNova = new Piece(indexPeca);
+                    tauler[i][j] = pecaNova;
                     pecesColocades++;
-                    piecesPool[indexPeca] = false;
+                    piecesPool.remove(pecaNova);
                 }
                 else tauler[i][j] = new Piece();
             }
@@ -76,17 +61,11 @@ public class TaulerExtended {
         }
         tauler[x][y] = piece;
         pecesColocades++;
-        piecesPool[piece.index] = false;
-
-
+        piecesPool.remove(piece);
     }
 
     public TaulerExtended copy(){
         return new TaulerExtended(tauler, pecesColocades, piecesPool);
-    }
-
-    public Piece[][] getTauler(){
-        return tauler;
     }
 
     public int getNPecesColocades(){
@@ -97,7 +76,7 @@ public class TaulerExtended {
         return 16-pecesColocades;
     }
 
-    public boolean[] getPecesDisponibles() {
+    public Set<Piece> getPecesDisponibles() {
         return piecesPool;
     }
 
@@ -117,12 +96,7 @@ public class TaulerExtended {
     public Piece getRandomAvailabePiece() {
 
         Random rand = new Random();
-        int index = rand.nextInt(16);
-
-        while(!piecesPool[index]){
-            index = rand.nextInt(16);
-        }
-
+        int index = rand.nextInt(piecesPool.size());
         return new Piece(index);
     }
 }

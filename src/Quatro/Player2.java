@@ -56,13 +56,10 @@ public class Player2 {
         Piece toPlacePiece = new Piece(colorin,formain,foratin,tamanyin);
         Resultat res;
 
-        if(torn < 2){
-            res = ABagent.randomStep(toPlacePiece, taulerJoc);
-        }
-        else{
-            int depth = torn + 1;
-            res = ABagent.alphaBetaThink(toPlacePiece, depth, taulerJoc);
-        }
+
+
+
+        res = ABagent.alphaBetaThink(toPlacePiece, torn+1, taulerJoc);
 
 
         Piece toPassPiece = res.nextPiece;

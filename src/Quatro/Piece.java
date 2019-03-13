@@ -20,10 +20,27 @@ public class Piece implements Cloneable{
     }
 
     String getPieceAsString(){
-        return String.format("%4s", Integer.toBinaryString(index)).replace(' ', '0');
+        if(index != -1)
+            return String.format("%4s", Integer.toBinaryString(index)).replace(' ', '0');
+        else
+            return "----";
     }
 
     boolean isValid(){
         return index >= 0 && index < 16;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) return false;
+        if (obj == this) return true;
+        if (!(obj instanceof Piece)) return false;
+        Piece o = (Piece) obj;
+        return o.index == this.index;
+    }
+
+    @Override
+    public int hashCode() {
+        return index * 16 + xor;
     }
 }

@@ -1,5 +1,7 @@
 package Quatro;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 public class AlphaBetaAgent {
@@ -11,167 +13,164 @@ public class AlphaBetaAgent {
     }
 
 
-    public Resultat alphaBetaThink(Piece a, int depth, Tauler tau){
+    public Resultat alphaBetaThink(Piece a, int depth, Tauler tau) {
         TaulerExtended tauler = new TaulerExtended(tau);
         Resultat res = new Resultat();
 
-        maxValue(a, tauler, depth, res ,-1000000, 1000000);
+        maxValue(a, tauler, depth, res, -1000000, 1000000);
 
-        if(res.nextPiece == null)
+        if (res.nextPiece == null)
             res.nextPiece = new Piece();
 
         return res;
     }
 
-    public Resultat randomStep(Piece a, Tauler tau){
+    public Resultat randomStep(Piece a, Tauler tau) {
         TaulerExtended tauler = new TaulerExtended(tau);
 
         Random rand = new Random();
 
         int x = rand.nextInt(4);
         int y = rand.nextInt(4);
-        while(tauler.getPiece(x,y).isValid()){
+        while (tauler.getPiece(x, y).isValid()) {
             x = rand.nextInt(4);
             y = rand.nextInt(4);
         }
 
 
-        boolean[] pecesDisponibles = tauler.getPecesDisponibles();
-        int index = rand.nextInt(16);
-
-        while(!pecesDisponibles[index]){
-            index = rand.nextInt(16);
-        }
 
         Resultat res = new Resultat();
-        res.nextPiece = new Piece(index);
+
+        res.nextPiece = tauler.getRandomAvailabePiece();
+        while(res.nextPiece == a){
+            res.nextPiece = tauler.getRandomAvailabePiece();
+        }
+
         res.x = x;
         res.y = y;
 
         return res;
     }
 
-    private int minValue(Piece a, TaulerExtended tau, int depth, Resultat result, int alpha, int beta){
-        int local_beta = Integer.MAX_VALUE;
+    private int minValue(Piece a, TaulerExtended tau, int depth, Resultat result, int alpha, int beta) {
+        int localBeta = Integer.MAX_VALUE;
 
-        for(int i = 0; i < 4; i++){
-            for(int j = 0; j<4; j++){
-                if(!tau.getPiece(j,i).isValid()){
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (!tau.getPiece(j, i).isValid()) {
                     TaulerExtended tauAux = tau.copy();
-                    tauAux.setPiece(j,i,a);
+                    tauAux.setPiece(j, i, a);
                     boolean haGuanyat = quartoWin(tauAux);
-                    if(tauAux.getNPecesColocades() == 16){
-                        //This placement filled up the board which means that
-                        //we can't go further down so we just update the x, j
-                        //and return the value of this end state
+                    if (tauAux.getNPecesColocades() == 16) {
+                        //El tauler està ple, per tant, ja no cal
+                        //que seguim explorant aquest camí.
                         result.x = j;
                         result.y = i;
-                        return (haGuanyat ? 1 : 0)  * -100;
-                    }
-                    else if(haGuanyat){
-                        //This is the maximum we can get, which means that we won the game
-                        //no reason to go further down since this lead to a victory
+                        result.nextPiece = new Piece();
+
+                        //En cas de tauler ple, en node MIN, pot ser que hagi perdut (-100) o bé que hi hagi empat (0).
+                        return (haGuanyat ? 1 : 0) * -100;
+                    } else if (haGuanyat) {
+                        //En aquest estat perdem la partida, per tant, no cal que
+                        //explorem més branques en aquest camí, ja que hem obtingut 
+                        //la puntuació mínima (-100)
                         result.x = j;
                         result.y = i;
+                        result.nextPiece = new Piece();
                         return -100;
-                    }
-                    else if(depth == 0){
-                        //We have reached the bottom of the recursion
-                        //and we need only evaluate the possible placements
-                        //of the piece that we have gotten
+                    } else if (depth == 0) {
+                        //Hem arribat al final de la recursió (profunditat)
+                        //és un node fulla... toca evaluar els possibles estats.
                         int valor = -quartoHeuristic(tauAux);
-                        if(valor < local_beta){
-                            local_beta = valor;
+                        if (valor < localBeta) {
+                            localBeta = valor;
                             result.x = j;
                             result.y = i;
                         }
-                        if(local_beta <= alpha)
-                            return local_beta;
-                    }
-                    else{
-                        boolean[] piecesAvailable = tauAux.getPecesDisponibles();
+                        if (localBeta <= alpha)
+                            return localBeta;
+                    } else {
+                        Iterator<Piece> piecesAvailable = tauAux.getPecesDisponibles().iterator();
 
-                        for(int k = 0; k<16; k++){
-                            if(piecesAvailable[k]){
-                                Resultat resAux = new Resultat();
-                                int val = maxValue(new Piece(k), tauAux, depth-1, resAux, alpha, local_beta);
-                                if(val < local_beta){
-                                    //The value we got from below is smaller
-                                    //than the best beta we have found which
-                                    //means we want that, so we need to update
-                                    //x, y and update beta
-                                    result.x = j;
-                                    result.y = i;
-                                    result.nextPiece = new Piece(k);
-                                    local_beta = val;
-                                }
-                                if(local_beta <= alpha) return local_beta;
+                        while (piecesAvailable.hasNext()) {
+                            Resultat resAux = new Resultat();
+                            Piece pecaAux = piecesAvailable.next();
+                            int val = maxValue(pecaAux, tauAux, depth - 1, resAux, alpha, localBeta);
+                            if (val < localBeta) {
+                                //El valor obtingut per sota és menor
+                                //que el millor beta que hem trobat fins ara.
+                                //Hem d'actualitzar el resultat i beta.
+                                result.x = j;
+                                result.y = i;
+                                result.nextPiece = pecaAux;
+                                localBeta = val;
                             }
+                            if (localBeta <= alpha) return localBeta;
                         }
                     }
 
                 }
+
             }
         }
-        return local_beta;
+        return localBeta;
     }
 
-    private int maxValue(Piece a, TaulerExtended tau, int depth, Resultat result, int alpha, int beta){
+    private int maxValue(Piece a, TaulerExtended tau, int depth, Resultat result, int alpha, int beta) {
         Integer local_alpha = Integer.MIN_VALUE;
 
-        for(int i = 0; i < 4; i++){
-            for(int j = 0; j<4; j++){
-                if(!tau.getPiece(j,i).isValid()){
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (!tau.getPiece(j, i).isValid()) {
                     TaulerExtended tauAux = tau.copy();
-                    tauAux.setPiece(j,i,a);
+                    tauAux.setPiece(j, i, a);
                     boolean haGuanyat = quartoWin(tauAux);
-                    if(tauAux.getNPecesColocades() == 16){
-                        //This placement filled up the board which means that
-                        //we can't go further down so we just update the x, j
-                        //and return the value of this end state
+                    if (tauAux.getNPecesColocades() == 16) {
+                        //El tauler està ple, per tant,
+                        //no cal que seguim buscant.
                         result.x = j;
                         result.y = i;
-                        return (haGuanyat ? 1 : 0)  * 100;
-                    }
-                    else if(haGuanyat){
-                        //This is the maximum we can get, which means that we won the game
-                        //no reason to go further down since this lead to a victory
+                        result.nextPiece = new Piece();
+                        return (haGuanyat ? 1 : 0) * 100;
+                    } else if (haGuanyat) {
+                        //És el màxim valor que podem obtenir, ja que implica victòria.
+                        //Per tant, no cal que seguim explorant aquesta branca.
                         result.x = j;
                         result.y = i;
+                        result.nextPiece = new Piece();
                         return 100;
-                    }
-                    else if(depth == 0){
-                        //We have reached the bottom of the recursion
-                        //and we need only evaluate the possible placements
-                        //of the piece that we have gotten
+                    } else if (depth == 0) {
+                        //Hem arribat al final de la recursió
+                        //i hem d'avaluar les possibles posicions
+                        //de les peces disponibles..
                         int valor = quartoHeuristic(tauAux);
-                        if(valor > local_alpha){
+                        if (valor > local_alpha) {
                             local_alpha = valor;
                             result.x = j;
                             result.y = i;
                         }
-                        if(local_alpha >= beta)
+                        if (local_alpha >= beta)
                             return local_alpha;
-                    }
-                    else{
-                        boolean[] piecesAvailable = tauAux.getPecesDisponibles();
+                    } else {
+                        Iterator<Piece> piecesAvailable = tauAux.getPecesDisponibles().iterator();
 
-                        for(int k = 0; k<16; k++){
-                            if(piecesAvailable[k]){
-                                Resultat resAux = new Resultat();
-                                int val = minValue(new Piece(k), tauAux, depth-1, resAux, local_alpha, beta);
-                                if(val > local_alpha){
-                                    //The value we got from below is better
-                                    //than what we have currently found
-                                    //which means we need to keep this
-                                    //position and update our alpha
-                                    result.x = j;
-                                    result.y = i;
-                                    result.nextPiece = new Piece(k);
-                                    local_alpha = val;
-                                }
-                                if(local_alpha >= beta) return local_alpha;
+                        while (piecesAvailable.hasNext()) {
+                            Resultat resAux = new Resultat();
+                            Piece pecaAux = piecesAvailable.next();
+                            int val = minValue(pecaAux, tauAux, depth - 1, resAux, local_alpha, beta);
+                            if (val > local_alpha) {
+                                //El valor que hem obtingut de fills és millor
+                                //que el que haviem trobat fins ara
+                                //això implica que hem d'actualitzar posició i alpha
+                                result.x = j;
+                                result.y = i;
+                                result.nextPiece = pecaAux;
+                                local_alpha = val;
                             }
+                            //Si l'alpha és major que el beta
+                            //no hem de continuar ja que el node MIN de per sobre
+                            //escollirà sempre el camí que condueixi a beta.
+                            if (local_alpha >= beta) return local_alpha;
                         }
                     }
 
@@ -182,24 +181,26 @@ public class AlphaBetaAgent {
     }
 
 
-    //This method should return a value between [-100, 100] where -100 is shait, 0 is a draw and 100 is great
+    //Aquest mètode ha de retornar un valor entre [-100,100] on -100 és derrota, 0 és empat i 100 és victòria.
     private int quartoHeuristic(TaulerExtended tau) {
 
         comptador++;
-        if(quartoWin(tau)){
+        if (quartoWin(tau)) {
             return 100;
         }
-        if(quartoSecureLoss(tau)){
+        if (quartoDerrotaSegura(tau)) {
             return -100;
         }
-        if(tau.getNPecesColocades() == 16){
+        if (tau.getNPecesColocades() == 16) {
             return 0;
         }
         int val = 0;
 
-        //update the value with different checks to arrive at a final return-value;
-        val -= tripleNeg(tau) * 10; //We want to avoid negative situations like the plague
-        //There are places where we can win, but it's far from guaranteed
+        //Actualitzem el valor amb les diferents heurístiques.
+
+        //Volem evitar al màxim un cas de tres peces consecutives en desavantatge.
+        val -= tripleNeg(tau) * 10;
+        //Hi ha algunes posicions que ens podrien donar victòria, però lluny de ser una aposta segura.
         val += triplePos(tau) * 5;
 
         return val;
@@ -210,35 +211,34 @@ public class AlphaBetaAgent {
         int pecesDisponibles = tau.getNPecesDisponibles();
         TripePiece tp = new TripePiece();
 
-        for(int i=0; i<4; i++){
+        for (int i = 0; i < 4; i++) {
             //Horitzontal
-            int pecesHoritzontals = piecesTriple(tau, tau.getPiece(0,i), tau.getPiece(1,i), tau.getPiece(2,i),tau.getPiece(3,i), tp);
-            if(pecesHoritzontals > 0){
-                //Since there is an odd number of pieces which can not
-                //complete the triple we found we might be able to
-                //force our opponent to give us a piece which we
-                //can win with
-                if( ((pecesDisponibles - pecesHoritzontals) % 2) != 0)
+            int pecesHoritzontals = piecesTriple(tau, tau.getPiece(0, i), tau.getPiece(1, i), tau.getPiece(2, i), tau.getPiece(3, i), tp);
+            if (pecesHoritzontals > 0) {
+                //Com que hi ha un nombre imparell de peces que no poden
+                //completar la tripleta que hem trobat, hauriem de ser capaços
+                //de forçar l'oponent a donar-nos una peça que ens faci guanyar.
+                if (((pecesDisponibles - pecesHoritzontals) % 2) != 0)
                     nTriples++;
             }
 
             //Vertical
-            int pecesVerticals = piecesTriple(tau, tau.getPiece(i,0), tau.getPiece(i,1), tau.getPiece(i,2),tau.getPiece(i,3), tp);
-            if(pecesVerticals > 0)
-                if( ((pecesDisponibles - pecesVerticals) % 2) != 0)
+            int pecesVerticals = piecesTriple(tau, tau.getPiece(i, 0), tau.getPiece(i, 1), tau.getPiece(i, 2), tau.getPiece(i, 3), tp);
+            if (pecesVerticals > 0)
+                if (((pecesDisponibles - pecesVerticals) % 2) != 0)
                     nTriples++;
         }
 
         //Diagonal1
-        int pecesD1 = piecesTriple(tau, tau.getPiece(0,0), tau.getPiece(1,1), tau.getPiece(2,2),tau.getPiece(3,3), tp);
-        if(pecesD1 > 0)
-            if( ((pecesDisponibles - pecesD1) % 2) != 0)
+        int pecesD1 = piecesTriple(tau, tau.getPiece(0, 0), tau.getPiece(1, 1), tau.getPiece(2, 2), tau.getPiece(3, 3), tp);
+        if (pecesD1 > 0)
+            if (((pecesDisponibles - pecesD1) % 2) != 0)
                 nTriples++;
 
         //Diagonal2
 
-        int pecesD2 = piecesTriple(tau, tau.getPiece(0,3), tau.getPiece(1,2), tau.getPiece(2,1),tau.getPiece(3,0), tp);
-        if(pecesD2 > 0) {
+        int pecesD2 = piecesTriple(tau, tau.getPiece(0, 3), tau.getPiece(1, 2), tau.getPiece(2, 1), tau.getPiece(3, 0), tp);
+        if (pecesD2 > 0) {
             if (((pecesDisponibles - pecesD2) % 2) != 0)
                 nTriples++;
         }
@@ -250,33 +250,33 @@ public class AlphaBetaAgent {
         int pecesDisponibles = tau.getNPecesDisponibles();
         TripePiece tp = new TripePiece();
 
-        for(int i=0; i<4; i++){
+        for (int i = 0; i < 4; i++) {
             //Horitzontal
-            int pecesHoritzontals = piecesTriple(tau, tau.getPiece(0,i), tau.getPiece(1,i), tau.getPiece(2,i),tau.getPiece(3,i), tp);
-            if(pecesHoritzontals > 0){
+            int pecesHoritzontals = piecesTriple(tau, tau.getPiece(0, i), tau.getPiece(1, i), tau.getPiece(2, i), tau.getPiece(3, i), tp);
+            if (pecesHoritzontals > 0) {
                 // Si hi ha un nombre parell de peces que no lliguen a la poisició lliure,
-                // estarem forçats a donar a l'oponent una peça guanyadora
-                if( ((pecesDisponibles - pecesHoritzontals) % 2) == 0)
+                // probablement estarem forçats a donar a l'oponent una peça guanyadora (si l'oponent juga bé).
+                if (((pecesDisponibles - pecesHoritzontals) % 2) == 0)
                     nTriples++;
             }
 
             //Vertical
-            int pecesVerticals = piecesTriple(tau, tau.getPiece(i,0), tau.getPiece(i,1), tau.getPiece(i,2),tau.getPiece(i,3), tp);
-            if(pecesVerticals > 0)
-                if( ((pecesDisponibles - pecesVerticals) % 2) == 0)
+            int pecesVerticals = piecesTriple(tau, tau.getPiece(i, 0), tau.getPiece(i, 1), tau.getPiece(i, 2), tau.getPiece(i, 3), tp);
+            if (pecesVerticals > 0)
+                if (((pecesDisponibles - pecesVerticals) % 2) == 0)
                     nTriples++;
         }
 
         //Diagonal1
-        int pecesD1 = piecesTriple(tau, tau.getPiece(0,0), tau.getPiece(1,1), tau.getPiece(2,2),tau.getPiece(3,3), tp);
-        if(pecesD1 > 0)
-            if( ((pecesDisponibles - pecesD1) % 2) == 0)
+        int pecesD1 = piecesTriple(tau, tau.getPiece(0, 0), tau.getPiece(1, 1), tau.getPiece(2, 2), tau.getPiece(3, 3), tp);
+        if (pecesD1 > 0)
+            if (((pecesDisponibles - pecesD1) % 2) == 0)
                 nTriples++;
 
         //Diagonal2
 
-        int pecesD2 = piecesTriple(tau, tau.getPiece(0,3), tau.getPiece(1,2), tau.getPiece(2,1),tau.getPiece(3,0), tp);
-        if(pecesD2 > 0) {
+        int pecesD2 = piecesTriple(tau, tau.getPiece(0, 3), tau.getPiece(1, 2), tau.getPiece(2, 1), tau.getPiece(3, 0), tp);
+        if (pecesD2 > 0) {
             if (((pecesDisponibles - pecesD2) % 2) == 0)
                 nTriples++;
         }
@@ -284,41 +284,51 @@ public class AlphaBetaAgent {
         return nTriples;
     }
 
-    private boolean quartoSecureLoss(TaulerExtended tau) {
+
+
+
+    /*
+        Quan hi ha dos línies de 3 peces diferents que tenen valors oposats d'almenys un atribut,
+        donant qualsevol peça a l'oponent, tenim asegurada la derrota.
+
+        Per trobar aquest estat, busquem totes les 3-pecesLinia i després les comparem entre elles
+        per saber si algunes d'elles tenen valors oposats d'algun atribut.
+     */
+    private boolean quartoDerrotaSegura(TaulerExtended tau) {
 
         TripePiece[] tps = new TripePiece[10];
         int nTps = 0;
 
-        for(int i = 0; i<4; i++){
+        for (int i = 0; i < 4; i++) {
             TripePiece tp = new TripePiece();
             //Horitzontal
-            if(piecesTriple(tau, tau.getPiece(0,i),tau.getPiece(1,i), tau.getPiece(2,i), tau.getPiece(3,i), tp) > 0){
+            if (piecesTriple(tau, tau.getPiece(0, i), tau.getPiece(1, i), tau.getPiece(2, i), tau.getPiece(3, i), tp) > 0) {
                 tps[nTps] = tp;
                 nTps++;
             }
 
             TripePiece tp2 = new TripePiece();
             //Vertical
-            if(piecesTriple(tau, tau.getPiece(i,0),tau.getPiece(i,1), tau.getPiece(i,2), tau.getPiece(i,3), tp2) > 0){
+            if (piecesTriple(tau, tau.getPiece(i, 0), tau.getPiece(i, 1), tau.getPiece(i, 2), tau.getPiece(i, 3), tp2) > 0) {
                 tps[nTps] = tp2;
                 nTps++;
             }
         }
 
         TripePiece tp3 = new TripePiece();
-        if(piecesTriple(tau, tau.getPiece(0,0),tau.getPiece(1,1), tau.getPiece(2,2), tau.getPiece(3,3), tp3) > 0){
+        if (piecesTriple(tau, tau.getPiece(0, 0), tau.getPiece(1, 1), tau.getPiece(2, 2), tau.getPiece(3, 3), tp3) > 0) {
             tps[nTps] = tp3;
             nTps++;
         }
 
         TripePiece tp4 = new TripePiece();
-        if(piecesTriple(tau, tau.getPiece(0,3),tau.getPiece(1,2), tau.getPiece(2,1), tau.getPiece(3,0), tp4) > 0){
+        if (piecesTriple(tau, tau.getPiece(0, 3), tau.getPiece(1, 2), tau.getPiece(2, 1), tau.getPiece(3, 0), tp4) > 0) {
             tps[nTps] = tp4;
             nTps++;
         }
 
-        for(int i=0; i<nTps-1; i++){
-            for(int j=i+1; j<nTps; j++) {
+        for (int i = 0; i < nTps - 1; i++) {
+            for (int j = i + 1; j < nTps; j++) {
 
                 int val1 = tps[i].a.index & tps[i].b.index & tps[i].c.index;
                 int val2 = tps[j].a.index & tps[j].b.index & tps[j].c.index;
@@ -332,75 +342,65 @@ public class AlphaBetaAgent {
         return false;
     }
 
-    private int piecesTriple(TaulerExtended tau, Piece a, Piece b, Piece c, Piece d, TripePiece tp){
-        boolean[] pecesDisponibles = tau.getPecesDisponibles();
+    private int piecesTriple(TaulerExtended tau, Piece a, Piece b, Piece c, Piece d, TripePiece tp) {
         Piece g;
         int piece_count;
+        if (a.isValid() && b.isValid() && c.isValid() && !d.isValid()) {
+            if (((a.index & b.index & c.index) > 0) || ((a.xor & b.xor & c.xor) > 0)) {
+                piece_count = 0;
 
-
-        if(a.isValid() && b.isValid() && c.isValid() && !d.isValid()){
-            if(((a.index & b.index & c.index) > 0) || ((a.xor & b.xor & c.xor) > 0)){
-                piece_count=0;
-                for(int i=0; i<16; i++){
-                    if(pecesDisponibles[i]){
-                        g = new Piece(i);
-                        if(guanya(a, b, c, g)){
-                            piece_count++;
-                        }
+                for (Piece piece : tau.getPecesDisponibles()) {
+                    g = piece;
+                    if (guanya(a, b, c, g)) {
+                        piece_count++;
                     }
                 }
-                if(piece_count>0){
+                if (piece_count > 0) {
                     tp.a = a;
                     tp.b = b;
                     tp.c = c;
                     return piece_count;
                 }
             }
-        }else if(a.isValid() && b.isValid() && !c.isValid() && d.isValid()){
-            if(((a.index & b.index & d.index) > 0) || ((a.xor & b.xor & d.xor) > 0)){
-                piece_count=0;
-                for(int i=0; i<16; i++){
-                    if(pecesDisponibles[i]){
-                        g = new Piece(i);
-                        if(guanya(a, b, d, g)){
-                            piece_count++;
-                        }
+        } else if (a.isValid() && b.isValid() && !c.isValid() && d.isValid()) {
+            if (((a.index & b.index & d.index) > 0) || ((a.xor & b.xor & d.xor) > 0)) {
+                piece_count = 0;
+                for (Piece piece : tau.getPecesDisponibles()) {
+                    g = piece;
+                    if (guanya(a, b, d, g)) {
+                        piece_count++;
                     }
                 }
-                if(piece_count>0){
+                if (piece_count > 0) {
                     tp.a = a;
                     tp.b = b;
                     tp.c = d;
                     return piece_count;
                 }
             }
-        }else if(a.isValid() && !b.isValid() && c.isValid() && d.isValid()){
-            if(((a.index & c.index & d.index) > 0) || ((a.xor & c.xor & d.xor) > 0)){
-                piece_count=0;
-                for(int i=0; i<16; i++){
-                    if(pecesDisponibles[i]){
-                        g = new Piece(i);
-                        if(guanya(a, c, d, g)){
-                            piece_count++;
-                        }
-                    }
+        } else if (a.isValid() && !b.isValid() && c.isValid() && d.isValid()) {
+            if (((a.index & c.index & d.index) > 0) || ((a.xor & c.xor & d.xor) > 0)) {
+                piece_count = 0;
+                for (Piece piece : tau.getPecesDisponibles()) {
+                    g = piece;
+                    if (guanya(a, c, d, g)) {
+                        piece_count++;
                 }
-                if(piece_count>0){
+                }
+                if (piece_count > 0) {
                     tp.a = a;
                     tp.b = c;
                     tp.c = d;
                     return piece_count;
                 }
             }
-        }else if(!a.isValid() && b.isValid() && c.isValid() && d.isValid()) {
+        } else if (!a.isValid() && b.isValid() && c.isValid() && d.isValid()) {
             if (((b.index & c.index & d.index) > 0) || ((b.xor & c.xor & d.xor) > 0)) {
                 piece_count = 0;
-                for (int i = 0; i < 16; i++) {
-                    if (pecesDisponibles[i]) {
-                        g = new Piece(i);
-                        if (guanya(b, c, d, g)) {
-                            piece_count++;
-                        }
+                for (Piece piece : tau.getPecesDisponibles()) {
+                    g = piece;
+                    if (guanya(b, c, d, g)) {
+                        piece_count++;
                     }
                 }
                 if (piece_count > 0) {
@@ -415,47 +415,46 @@ public class AlphaBetaAgent {
     }
 
     private boolean quartoWin(TaulerExtended tau) {
-        for(int i = 0; i < 4; i++){
+        for (int i = 0; i < 4; i++) {
             //Horizontal
-            if(guanya(tau.getPiece(0,i), tau.getPiece(1,i), tau.getPiece(2,i), tau.getPiece(3,i))){
+            if (guanya(tau.getPiece(0, i), tau.getPiece(1, i), tau.getPiece(2, i), tau.getPiece(3, i))) {
                 return true;
             }
             //Vertical
-            if(guanya(tau.getPiece(i,0), tau.getPiece(i,1), tau.getPiece(i,2), tau.getPiece(i,3))){
+            if (guanya(tau.getPiece(i, 0), tau.getPiece(i, 1), tau.getPiece(i, 2), tau.getPiece(i, 3))) {
                 return true;
             }
         }
-        if(guanya(tau.getPiece(0,0), tau.getPiece(1,1), tau.getPiece(2,2), tau.getPiece(3,3))){
+        if (guanya(tau.getPiece(0, 0), tau.getPiece(1, 1), tau.getPiece(2, 2), tau.getPiece(3, 3))) {
             return true;
         }
-        if(guanya(tau.getPiece(0,3), tau.getPiece(1,2), tau.getPiece(2,1), tau.getPiece(3,0))) {
+        if (guanya(tau.getPiece(0, 3), tau.getPiece(1, 2), tau.getPiece(2, 1), tau.getPiece(3, 0))) {
             return true;
         }
         return false;
     }
 
-    private boolean guanya(Piece p1, Piece p2, Piece p3, Piece p4){
+    private boolean guanya(Piece p1, Piece p2, Piece p3, Piece p4) {
         // 1 si es una combinacio guanyadora o si no
-        if( !p1.isValid() || !p2.isValid() || !p3.isValid() || !p4.isValid() ){
+        if (!p1.isValid() || !p2.isValid() || !p3.isValid() || !p4.isValid()) {
             //hi ha algun dels 4 buit no podem guanyar
             return false;
-        }else{
+        } else {
             return (p1.index & p2.index & p3.index & p4.index) > 0 || (p1.xor & p2.xor & p3.xor & p4.xor) > 0;
         }
     }
 
-    public class TripePiece{
+    public class TripePiece {
         public Piece a;
         public Piece b;
         public Piece c;
 
-        TripePiece(){
+        TripePiece() {
             a = new Piece();
             b = new Piece();
             c = new Piece();
         }
     }
-
 
 
 }

@@ -60,12 +60,7 @@ public class Player1 {
         Piece toPlacePiece = new Piece(colorin,formain,foratin,tamanyin);
         Resultat res;
 
-        if(torn < 2){
-            res = ABagent.randomStep(toPlacePiece, taulerJoc);
-        }
-        else{
-            res = ABagent.alphaBetaThink(toPlacePiece, 2, taulerJoc);
-        }
+        res = ABagent.alphaBetaThink(toPlacePiece, torn+1, taulerJoc);
 
         Piece toPassPiece = res.nextPiece;
         String toPassPieceString = toPassPiece.getPieceAsString();
