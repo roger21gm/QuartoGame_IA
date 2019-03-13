@@ -29,3 +29,7 @@ src/Marc/Piece.java
 src/Marc/Player.java
 src/Marc/Player1.java
 src/Marc/Position.java
+src/Adri/SolutionTree.java
+src/Adri/Player1.java
+src/Adri/Pair.java
+src/Adri/MinMax.java
