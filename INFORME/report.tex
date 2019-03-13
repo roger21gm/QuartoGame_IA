@@ -1,0 +1,48 @@
+\documentclass[12pt]{article}
+
+\usepackage{listings}
+\usepackage[margin=1in]{geometry} 
+\usepackage[utf8]{inputenc}
+\usepackage[catalan]{babel}
+\usepackage{multicol}
+
+\usepackage{geometry}
+\usepackage{setspace}
+\setcounter{secnumdepth}{5}
+
+\newcommand{\SubItem}[1]{
+    {\setlength\itemindent{-5pt} \item[] #1}
+}
+
+\newenvironment{changemargin}[2]{%
+\begin{list}{}{%
+\setlength{\topsep}{0pt}%
+\setlength{\leftmargin}{#1}%
+\setlength{\rightmargin}{#2}%
+\setlength{\listparindent}{\parindent}%
+\setlength{\itemindent}{\parindent}%
+\setlength{\parsep}{\parskip}%
+}%
+\item[]}{\end{list}}
+
+ 
+\begin{document}
+ 
+% --------------------------------------------------------------
+%                         Start here
+% --------------------------------------------------------------
+\newgeometry{vmargin={1cm,3cm}}
+
+\title{\textbf{Nom de l'assigantura \\ Títol del treball / pràctica }}
+\author{Roger Generoso Masós}
+\maketitle
+
+\tableofcontents
+\newpage
+\restoregeometry
+
+\section{Secció a}
+\section{Secció b}
+\section{Secció c}
+\section{Secció d}
+\end{document}
